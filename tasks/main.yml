@@ -11,3 +11,8 @@
 - name: PHP | Include composer
   include_tasks: composer.yml
   when: install_composer == True
+
+- name: PHP | Include xdebug
+  include_tasks: xdebug.yml
+  when: install_xdebug == True
+

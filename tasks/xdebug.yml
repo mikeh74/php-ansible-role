@@ -1,0 +1,25 @@
+---
+- name: "PHP | Install Xdebug"
+  apt: 
+    name: "php-xdebug"
+    state: present
+
+- name: Register xdebug location
+  shell: "find / -name 'xdebug.so'"
+  register: xdebug_location
+
+- name: Add Xdebug config to php ini file
+  ini_file:
+    path: "{{ php_ini_location | default('/etc/php/7.2/apache2/php.ini') }}" 
+    section: XDebug
+    option: '{{item.option}}'
+    value: '{{item.value}}'
+    # mode: 0600
+    # backup: yes
+  with_items:
+    - {option: zend_extension, value: "{{xdebug_location.stdout}}"}
+    - {option: xdebug.remote_enable, value: "true"}
+    - {option: xdebug.remote_port, value: 9000}
+    - {option: xdebug.remote_connect_back, value: "true"}
+    - {option: xdebug.autostart, value: "on"}
+  notify: restart apache

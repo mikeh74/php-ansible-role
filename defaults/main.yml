@@ -2,6 +2,7 @@
 # default vars for PHP role
 
 php_version: 7.2
+php_ini_location: /etc/php/{{ php_version }}/apache2/php.ini
 
 php_packages:
     - "php{{ php_version }}-common"
@@ -20,5 +21,5 @@ php_packages:
     - "libapache2-mod-php{{ php_version }}"
 
 install_composer: True
-
+install_xdebug: True
 use_ppa: False
