@@ -1,8 +1,13 @@
 ---
-- name: "Add ondrej repository for later versions of PHP."
+- name: PHP | Add ondrej repository for later versions of PHP
   apt_repository: repo='ppa:ondrej/php' update_cache=yes
+  when: use_ppa == True
 
-- name: "Install PHP and dependencies."
+- name: PHP | Install PHP and dependencies
   apt:
     name: "{{ php_packages }}"
     state: present
+
+- name: PHP | Include composer
+  include_tasks: composer.yml
+  when: install_composer == True
