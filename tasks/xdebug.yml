@@ -1,7 +1,7 @@
 ---
-- name: "PHP | Install Xdebug"
+- name: Install Xdebug
   apt: 
-    name: "php-xdebug"
+    name: php-xdebug
     state: present
 
 - name: Register xdebug location

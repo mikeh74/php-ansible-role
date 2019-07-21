@@ -1,28 +1,28 @@
 ---
-- name: PHP | Download Composer installer.
+- name: Download Composer installer.
   get_url:
     url: https://getcomposer.org/installer
     dest: /tmp/composer-installer.php
     mode: 0755
 
-- name: PHP | Run Composer installer.
+- name: Run Composer installer.
   command: >
     php composer-installer.php
     chdir=/tmp
     creates=/usr/local/bin/composer
 
-- name: PHP | Move Composer into globally-accessible location.
+- name: Move Composer into globally-accessible location.
   shell: >
     mv /tmp/composer.phar /usr/local/bin/composer
     creates=/usr/local/bin/composer
 
-# - name: PHP | Remove composer from $PATH if it exists
+# - name: Remove composer from $PATH if it exists
 #   lineinfile:
 #     path: /home/{{ web_server_user }}/.bashrc
 #     regexp: '^export PATH="$PATH:$HOME/.config/composer/vendor/bin"'
 #     state: absent
 
-# - name: PHP | Add composer to $PATH
+# - name: Add composer to $PATH
 #   lineinfile:
 #     path: /home/{{ web_server_user }}/.bashrc
 #     line: 'export PATH="$PATH:$HOME/.config/composer/vendor/bin"'
