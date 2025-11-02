@@ -1,15 +1,23 @@
 galaxy_info:
   author: Mike Horrocks
-  description: PHP Ansible role
+  description: Modern PHP Ansible role with support for multiple PHP versions and web servers
   license: MIT
-  min_ansible_version: 2.4
-
+  min_ansible_version: "2.12"
+  
   platforms:
   - name: Ubuntu
     versions:
-      - 18.04
-      - 16.04
+      - focal
+      - jammy
+      - noble
+  - name: Debian
+    versions:
+      - bullseye
+      - bookworm
 
   galaxy_tags:
-    - PHP
+    - php
     - web
+    - development
+    - composer
+    - xdebug

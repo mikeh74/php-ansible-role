@@ -1,25 +1,46 @@
 ---
 - name: Install Xdebug
   apt: 
-    name: php-xdebug
+    name: "php{{ php_version }}-xdebug"
     state: present
 
-- name: Register xdebug location
-  shell: "find / -name 'xdebug.so'"
-  register: xdebug_location
+- name: Create Xdebug configuration directory
+  file:
+    path: "/etc/php/{{ php_version }}/mods-available"
+    state: directory
+    mode: '0755'
 
-- name: Add Xdebug config to php ini file
+- name: Configure Xdebug (Xdebug 3.x configuration)
   ini_file:
-    path: "{{ php_ini_location | default('/etc/php/7.2/apache2/php.ini') }}" 
-    section: XDebug
-    option: '{{item.option}}'
-    value: '{{item.value}}'
-    # mode: 0600
-    # backup: yes
-  with_items:
-    - {option: zend_extension, value: "{{xdebug_location.stdout}}"}
-    - {option: xdebug.remote_enable, value: "true"}
-    - {option: xdebug.remote_port, value: 9000}
-    - {option: xdebug.remote_connect_back, value: "true"}
-    - {option: xdebug.autostart, value: "on"}
+    path: "/etc/php/{{ php_version }}/mods-available/xdebug.ini"
+    section: xdebug
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    backup: true
+  loop:
+    - { option: "xdebug.mode", value: "{{ xdebug_mode }}" }
+    - { option: "xdebug.start_with_request", value: "{{ xdebug_start_with_request }}" }
+    - { option: "xdebug.client_port", value: "{{ xdebug_client_port }}" }
+    - { option: "xdebug.client_host", value: "{{ xdebug_client_host }}" }
+    - { option: "xdebug.idekey", value: "{{ xdebug_idekey }}" }
+    - { option: "xdebug.discover_client_host", value: "true" }
+    - { option: "xdebug.log_level", value: "0" }
+  notify:
+    - restart apache
+    - restart php-fpm
+
+- name: Enable Xdebug module for CLI
+  shell: phpenmod -v {{ php_version }} -s cli xdebug
+  changed_when: false
+
+- name: Enable Xdebug module for Apache
+  shell: phpenmod -v {{ php_version }} -s apache2 xdebug
+  when: php_webserver == "apache2"
+  changed_when: false
   notify: restart apache
+
+- name: Enable Xdebug module for FPM
+  shell: phpenmod -v {{ php_version }} -s fpm xdebug
+  when: php_webserver == "fpm"
+  changed_when: false
+  notify: restart php-fpm

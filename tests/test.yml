@@ -1,5 +1,21 @@
 ---
 - hosts: localhost
   remote_user: root
+  vars:
+    php_version: "8.3"
+    php_webserver: apache2
+    install_composer: true
+    install_xdebug: true
+    php_display_errors: true
   roles:
-    - php
+    - role: php
+      
+- hosts: localhost
+  remote_user: root
+  vars:
+    php_version: "8.3"
+    php_webserver: fpm
+    install_composer: true
+    install_xdebug: false
+  roles:
+    - role: php

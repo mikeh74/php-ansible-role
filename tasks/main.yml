@@ -1,17 +1,76 @@
 ---
-- name: Add ondrej repository for later versions of PHP
-  apt_repository: repo='ppa:ondrej/php' update_cache=yes
-  when: use_ppa == True
+- name: Update apt cache
+  apt:
+    update_cache: true
+    cache_valid_time: 3600
 
-- name: Install PHP and dependencies
+- name: Add ondrej repository for latest PHP versions
+  apt_repository: 
+    repo: 'ppa:ondrej/php'
+    update_cache: true
+  when: use_ppa | bool
+
+- name: Install core PHP packages
   apt:
     name: "{{ php_packages }}"
     state: present
 
-- name: Include composer
-  include_tasks: composer.yml
-  when: install_composer == True
+- name: Install PHP extensions
+  apt:
+    name: "{{ php_extensions }}"
+    state: present
 
-- name: Include xdebug
+- name: Install Apache PHP module
+  apt:
+    name: "{{ php_apache_package }}"
+    state: present
+  when: php_webserver == "apache2"
+  notify: restart apache
+
+- name: Install system packages
+  apt:
+    name: "{{ php_system_packages }}"
+    state: present
+
+- name: Configure PHP ini settings
+  ini_file:
+    path: "{{ php_ini_location }}"
+    section: PHP
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+    backup: true
+  loop:
+    - { option: "memory_limit", value: "{{ php_memory_limit }}" }
+    - { option: "max_execution_time", value: "{{ php_max_execution_time }}" }
+    - { option: "max_input_time", value: "{{ php_max_input_time }}" }
+    - { option: "upload_max_filesize", value: "{{ php_upload_max_filesize }}" }
+    - { option: "post_max_size", value: "{{ php_post_max_size }}" }
+    - { option: "error_reporting", value: "{{ php_error_reporting }}" }
+    - { option: "display_errors", value: "{{ php_display_errors | ternary('On', 'Off') }}" }
+    - { option: "log_errors", value: "{{ php_log_errors | ternary('On', 'Off') }}" }
+  notify:
+    - restart apache
+    - restart php-fpm
+
+- name: Configure PHP-FPM pool
+  template:
+    src: www.conf.j2
+    dest: "{{ php_fpm_pool_conf }}"
+    backup: true
+  when: php_webserver == "fpm"
+  notify: restart php-fpm
+
+- name: Start and enable PHP-FPM service
+  service:
+    name: "php{{ php_version }}-fpm"
+    state: started
+    enabled: true
+  when: php_webserver == "fpm"
+
+- name: Include composer tasks
+  include_tasks: composer.yml
+  when: install_composer | bool
+
+- name: Include xdebug tasks
   include_tasks: xdebug.yml
-  when: install_xdebug == True
+  when: install_xdebug | bool

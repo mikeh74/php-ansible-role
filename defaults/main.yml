@@ -1,25 +1,77 @@
 ---
-# default vars for PHP role
+# Default vars for PHP role
 
-php_version: 7.2
-php_ini_location: /etc/php/{{ php_version }}/apache2/php.ini
+# PHP version to install (8.1, 8.2, 8.3, 8.4)
+php_version: "8.3"
 
+# Web server type (apache2, fpm, cli-only)
+php_webserver: apache2
+
+# PHP configuration paths
+php_ini_location: "/etc/php/{{ php_version }}/{{ php_webserver }}/php.ini"
+php_fpm_pool_conf: "/etc/php/{{ php_version }}/fpm/pool.d/www.conf"
+
+# Core PHP packages
 php_packages:
     - "php{{ php_version }}-common"
     - "php{{ php_version }}-cli"
-    - "php{{ php_version }}-dev"
-    - "php{{ php_version }}-gd"
-    - "php{{ php_version }}-curl"
-    - "php{{ php_version }}-json"
+    - "php{{ php_version }}-fpm"
     - "php{{ php_version }}-opcache"
-    - "php{{ php_version }}-xml"
+
+# Additional PHP extensions
+php_extensions:
+    - "php{{ php_version }}-curl"
+    - "php{{ php_version }}-gd"
+    - "php{{ php_version }}-intl"
     - "php{{ php_version }}-mbstring"
-    - "php{{ php_version }}-pdo"
     - "php{{ php_version }}-mysql"
+    - "php{{ php_version }}-xml"
+    - "php{{ php_version }}-zip"
+    - "php{{ php_version }}-bcmath"
+    - "php{{ php_version }}-soap"
+    - "php{{ php_version }}-readline"
+
+# Apache module (only installed when php_webserver is apache2)
+php_apache_package: "libapache2-mod-php{{ php_version }}"
+
+# System packages
+php_system_packages:
     - php-apcu
     - libpcre3-dev
-    - "libapache2-mod-php{{ php_version }}"
 
-install_composer: True
-install_xdebug: True
-use_ppa: False
+# Feature flags
+install_composer: true
+install_xdebug: false
+use_ppa: true
+
+# Composer settings
+composer_version: "2"
+composer_keep_updated: true
+composer_global_packages: []
+
+# Xdebug settings (for Xdebug 3.x)
+xdebug_mode: "debug,coverage"
+xdebug_start_with_request: "trigger"
+xdebug_client_port: 9003
+xdebug_client_host: "host.docker.internal"
+xdebug_idekey: "VSCODE"
+
+# PHP-FPM settings
+php_fpm_user: www-data
+php_fpm_group: www-data
+php_fpm_listen: "/run/php/php{{ php_version }}-fpm.sock"
+php_fpm_pm: dynamic
+php_fpm_max_children: 50
+php_fpm_start_servers: 5
+php_fpm_min_spare_servers: 5
+php_fpm_max_spare_servers: 35
+
+# PHP ini settings
+php_memory_limit: "256M"
+php_max_execution_time: 60
+php_max_input_time: 60
+php_upload_max_filesize: "64M"
+php_post_max_size: "64M"
+php_error_reporting: "E_ALL & ~E_DEPRECATED & ~E_STRICT"
+php_display_errors: false
+php_log_errors: true

@@ -1,0 +1,49 @@
+---
+- name: Verify
+  hosts: all
+  become: true
+  tasks:
+    - name: Check if PHP is installed
+      command: php --version
+      register: php_version_check
+      changed_when: false
+
+    - name: Verify PHP version
+      assert:
+        that:
+          - "'PHP 8.3' in php_version_check.stdout"
+        fail_msg: "PHP 8.3 is not installed or not the correct version"
+
+    - name: Check if Composer is installed
+      command: composer --version
+      register: composer_version_check
+      changed_when: false
+
+    - name: Verify Composer installation
+      assert:
+        that:
+          - "'Composer version 2' in composer_version_check.stdout"
+        fail_msg: "Composer is not installed or not version 2"
+
+    - name: Check if Xdebug is loaded
+      command: php -m
+      register: php_modules
+      changed_when: false
+
+    - name: Verify Xdebug is loaded
+      assert:
+        that:
+          - "'xdebug' in php_modules.stdout"
+        fail_msg: "Xdebug module is not loaded"
+
+    - name: Check Apache service status
+      service:
+        name: apache2
+      register: apache_status
+
+    - name: Verify Apache is running
+      assert:
+        that:
+          - apache_status.status.ActiveState == "active"
+        fail_msg: "Apache is not running"
+      when: php_webserver == "apache2"

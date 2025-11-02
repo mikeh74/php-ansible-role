@@ -1,3 +1,27 @@
 ---
 # handlers file for php
 
+- name: restart apache
+  service:
+    name: apache2
+    state: restarted
+  when: php_webserver == "apache2"
+
+- name: reload apache
+  service:
+    name: apache2
+    state: reloaded
+  when: php_webserver == "apache2"
+
+- name: restart php-fpm
+  service:
+    name: "php{{ php_version }}-fpm"
+    state: restarted
+  when: php_webserver == "fpm"
+
+- name: reload php-fpm
+  service:
+    name: "php{{ php_version }}-fpm"
+    state: reloaded
+  when: php_webserver == "fpm"
+
